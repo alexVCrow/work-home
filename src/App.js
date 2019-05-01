@@ -1,28 +1,46 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Component} from 'react';
+import Login from "./component/login_";
+import { Route, Redirect, Switch } from "react-router-dom";
+import Main from "./component/main";
+import NavBar from './component/navbar';
+import Users from "./component/users";
+import Change from "./elements/modalChange";
+
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+
+    state={};
+
+    componentDidMount() {
+        const user = localStorage.getItem('token');
+        this.setState({ user});
+    }
+
+    onLogin = () => {
+        const user = localStorage.getItem('token');
+        this.setState({ user });
+    }
+
+    render() {
+        const { user } = this.state;
+        return (
+            <React.Fragment>
+                <NavBar user={user}></NavBar>
+                <main className="container">
+                    <Switch>
+                        <Route
+                            path="/login"
+                            render={props => <Login {...props} user={user} onLogin={this.onLogin} />}
+                        />
+                        <Route path='/main' component={Main}></Route>
+                        <Route path='/users' exact component={Users}></Route>
+                        <Route path='/change' component={Change}></Route>
+                        <Redirect from="/" exact to="/login" />
+                    </Switch>
+                </main>
+            </React.Fragment>
+        )
+    }
 }
 
 export default App;

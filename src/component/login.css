@@ -1,0 +1,17 @@
+.form-signin {
+    width: 100%;
+    max-width: 400px;
+    padding: 15px;
+    margin: auto;
+    -webkit-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: azure;
+    box-shadow: 0 0 10px azure;
+}
+
+.form-control.is-invalid {
+    background-image: none!important;
+}

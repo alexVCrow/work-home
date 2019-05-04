@@ -3,13 +3,10 @@ import TableHeader from '../elements/tableheader';
 import TableBody from "../elements/tablebody";
 import GroupButtons from "../elements/groupButtons";
 import Search from "../elements/search";
-import ModalMy from '../elements/modal'
 import ModalAdd from "../elements/modalAdd";
-import ModalChange from "../elements/modalChange"
 
-const closeDeleteModal = {deleteModal: false, people: ''};
-const closeAddModal = {addModal: false, people:''};
-const closeChangeModal = {changeModal: false, people:''};
+const closeAddModal = {addModal: false, people:'',
+    typeModal:'',closeModal:'',successModal:'',textTitle:'', textButton:''};
 
 class Main extends Component {
     state = {
@@ -32,17 +29,24 @@ class Main extends Component {
                 buttons: people => this.generateFunc(people)}
         ], filterData: '',
         delete: {deleteModal: false, people:''},
-        add: {addModal: false, people:''},
+        add: {addModal: false, people:'', typeModal:'',closeModal:'',
+            successModal:'', textTitle:'', textButton:''},
         change: {changeModal: false, people:''}
-    }
+    };
 
     generateFunc = people => {
         return <GroupButtons people={people} onDelete={this.onDelete} onChange={this.onChange}/>
-    }
+    };
 
     onDelete = people => {
-        this.setState({delete: {deleteModal: true, people: people}});
-    }
+        this.setState({add:
+                {addModal: true,
+                    people: people,
+                    typeModal: 'confirmModal',
+                    closeModal: this.modalAddClose,
+                    successModal: this.modalDeleteSuccess,
+                    textTitle: 'Подтвердите удаление', textButton:''}});
+    };
 
     onChange = people => {
         let user = {};
@@ -50,78 +54,76 @@ class Main extends Component {
         user.lastName = people.lastName;
         user.firstName = people.firstName;
         user.middleName = people.middleName;
-        this.setState({ change: {changeModal: true, people:user} });
-    }
+        this.setState({add:
+                {addModal: true,
+                    people: user,
+                    typeModal: 'changeModal',
+                    closeModal: this.modalAddClose,
+                    successModal: this.modalChangeSuccess,
+                    textTitle: 'Изменение агента', textButton:'Изменить'}});
+    };
 
     onFiltered = filterData => {
         this.setState({filterData});
-    }
+    };
 
     searchData = (data, value) => {
         if(value.length === 0) return data;
-        const val = value.toLowerCase().trim().replace(/ /g,'')
+        const val = value.toLowerCase().trim().replace(/ /g,'');
         return data.filter(item =>
             (item.lastName + item.firstName + item.middleName).toLowerCase().indexOf(val) > -1)
-    }
+    };
 
-    modalDeleteClose = () =>{
-        this.setState({delete: closeDeleteModal});
-    }
-
-    modalSuccess = () => {
-        const {people} = this.state.delete;
-        const copyData = [...this.state.data]
+    modalDeleteSuccess = () => {
+        const {people} = this.state.add;
+        const copyData = [...this.state.data];
         const data = copyData.filter( p=> (p.key !== people.key));
-        this.setState({data, delete:closeDeleteModal});
-    }
+        this.setState({data, add: closeAddModal});
+    };
 
     modalAdd = () => {
-        this.setState({add: {addModal: true, people: ''}});
-    }
+        this.setState({add:
+                    {addModal: true,
+                    people: '',
+                    typeModal: 'addModal',
+                    closeModal: this.modalAddClose,
+                    successModal: this.modalAddSuccess,
+                    textTitle: 'Добавление агента', textButton:'Добавить'}
+        });
+    };
 
     modalAddClose = () => {
         this.setState({add: closeAddModal});
-    }
-
-    modalChangeClose = () => {
-        this.setState({change: closeChangeModal});
-    }
+    };
 
     modalAddSuccess = people => {
-        const data = [...this.state.data]
+        const data = [...this.state.data];
         const lastKey = data.length === 0 ? 0 : data[data.length - 1].key;
-        const pp = {key: lastKey + 1, ...people, buttons: people => this.generateFunc(people)}
-        data.push(pp)
-        this.setState({data, add:closeAddModal});
-    }
+        const pp = {key: lastKey + 1, ...people, buttons: people => this.generateFunc(people)};
+        data.push(pp);
+        this.setState({data, add: closeAddModal});
+    };
 
     modalChangeSuccess = people => {
-        const data = [...this.state.data]
+        const data = [...this.state.data];
         const changeData = data.map(dt => {
             if(dt.key === people.key){
                 dt = { ...dt, lastName: people.lastName,
                     firstName: people.firstName, middleName: people.middleName};
             }
             return dt;
-        })
-        this.setState({data: changeData});
-        this.setState({change: closeChangeModal});
+        });
+        this.setState({data: changeData, add: closeAddModal});
 
-    }
-
-
+    };
 
     render() {
-        const { fields, data, filterData, delete:del, add, change} = this.state;
-        const { deleteModal} = del;
-        const { addModal } = add;
-        const { changeModal, people } = change;
+        const { fields, data, filterData, add} = this.state;
+        const { addModal} = add;
         const items = this.searchData(data,filterData);
         return (
             <React.Fragment>
-                {deleteModal && (<ModalMy show={deleteModal} modalDeleteClose={this.modalDeleteClose} modalSuccess={this.modalSuccess}/>)}
-                {addModal && (<ModalAdd show={addModal} modalAddClose={this.modalAddClose} modalAddSuccess={this.modalAddSuccess}/>)}
-                {changeModal && (<ModalChange show={changeModal} people={people} modalChangeClose={this.modalChangeClose} modalChangeSuccess={this.modalChangeSuccess}/>)}
+                {addModal && (<ModalAdd show={addModal} modal={add}/>)}
                 <div className='row mt-5'>
                     <div className="col-4 pl-0">
                         <Search onFiltered={this.onFiltered} count={items.length}/>

@@ -1,8 +1,6 @@
-import React, {Component} from 'react';
+import React from 'react';
 
-export default class TableHeader extends Component {
-    render() {
-        const {fields} = this.props;
+const TableHeader = ({fields}) => {
         return (
             <thead>
             <tr>
@@ -12,5 +10,6 @@ export default class TableHeader extends Component {
             </tr>
             </thead>
         );
-    }
-}
+};
+
+export default TableHeader;

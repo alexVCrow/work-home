@@ -1,30 +1,27 @@
-import React, {Component} from 'react';
+import React from 'react';
 
-export default class TableBody extends Component {
+const TableBody = ({data}) => {
 
-    generateUniqueKey = (keyName,inf) => {
+    function generateUniqueKey(keyName,inf){
         return `${inf}_${keyName}`;
     }
 
-    generateValue = function (data, key) {
+    function generateValue (data, key) {
         const value = data[key];
         if(key === 'buttons') return value(data);
         return value;
     }
-
-
-    render() {
-        const {data} = this.props;
         return (
             <tbody>
             {data.map(d => (
                 <tr key={d.key}>
                     {Object.keys(d).map((keyName, i) => (
-                        <td key={this.generateUniqueKey(keyName, i)}>{this.generateValue(d, keyName)}</td>
+                        <td key={generateUniqueKey(keyName, i)}>{generateValue(d, keyName)}</td>
                     ))}
                 </tr>
             ))}
             </tbody>
         )
-    }
-}
+};
+
+export default TableBody;

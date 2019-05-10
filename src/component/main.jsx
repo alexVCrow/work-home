@@ -1,42 +1,36 @@
 import React, {Component} from 'react';
 import TableHeader from '../elements/tableheader';
 import TableBody from "../elements/tablebody";
-import GroupButtons from "../elements/groupButtons";
+// import GroupButtons from "../elements/groupButtons";
 import Search from "../elements/search";
 import ModalAdd from "../elements/modalAdd";
+import withUserService from "../service/withUserService";
+import Spinner from "../spinner/spinner";
+// import withData from "../service/withData";
 
 const closeAddModal = {addModal: false, people:'',
     typeModal:'',closeModal:'',successModal:'',textTitle:'', textButton:''};
 
 class Main extends Component {
     state = {
-        fields: [
-            {field:'Id', key:1},
-            {field:'Фамилия',key:2, value: 'Test'},
-            {field: 'Имя', key:3, value: 'Test'},
-            {field:'Отчество', key:4, value: 'Test'},
-            {field:'Действие', key:5, value: 'Test'}],
-        data: [
-            { key:1,
-                lastName: 'Ворона',
-                firstName: 'Майя',
-                middleName: 'Александровна',
-                buttons: people => this.generateFunc(people)
-            },
-            {key:2, lastName: 'Ворона', firstName: 'Александр', middleName: 'Сергеевич',
-                buttons: people => this.generateFunc(people)},
-            {key:3, lastName: 'Цветкова', firstName: 'Ольга', middleName: 'Владимировна',
-                buttons: people => this.generateFunc(people)}
-        ], filterData: '',
-        delete: {deleteModal: false, people:''},
+        fields: [],
+        data: [], filterData: '',
         add: {addModal: false, people:'', typeModal:'',closeModal:'',
             successModal:'', textTitle:'', textButton:''},
-        change: {changeModal: false, people:''}
+        spinner: true
     };
 
-    generateFunc = people => {
-        return <GroupButtons people={people} onDelete={this.onDelete} onChange={this.onChange}/>
-    };
+    componentDidMount() {
+        const {userService} = this.props;
+        setTimeout(() => {
+            Promise.all([
+                userService.getData(),
+                userService.getFields()
+            ]).then(([data, fields]) => {
+                this.setState({data, fields, spinner: false});
+            })
+        }, 1000);
+    }
 
     onDelete = people => {
         this.setState({add:
@@ -99,7 +93,7 @@ class Main extends Component {
     modalAddSuccess = people => {
         const data = [...this.state.data];
         const lastKey = data.length === 0 ? 0 : data[data.length - 1].key;
-        const pp = {key: lastKey + 1, ...people, buttons: people => this.generateFunc(people)};
+        const pp = {key: lastKey + 1, ...people};
         data.push(pp);
         this.setState({data, add: closeAddModal});
     };
@@ -118,9 +112,11 @@ class Main extends Component {
     };
 
     render() {
-        const { fields, data, filterData, add} = this.state;
+        const { fields, filterData, add, data, spinner} = this.state;
         const { addModal} = add;
         const items = this.searchData(data,filterData);
+        if(spinner)
+            return <Spinner/>;
         return (
             <React.Fragment>
                 {addModal && (<ModalAdd show={addModal} modal={add}/>)}
@@ -135,7 +131,7 @@ class Main extends Component {
                 {items.length === 0 || (<div className='row'>
                     <table className="table table-hover table-dark mt-2">
                         <TableHeader fields={fields}/>
-                        <TableBody data={items}/>
+                        <TableBody data={items} onDelete={this.onDelete} onChange={this.onChange}/>
                     </table>
                 </div>)}
             </React.Fragment>
@@ -143,4 +139,4 @@ class Main extends Component {
     }
 }
 
-export default Main;
+export default withUserService(Main);
